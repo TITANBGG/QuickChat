@@ -1,0 +1,144 @@
+Süper Ali! O zaman şimdi QuickChat için basit ama şık bir **HTML + JavaScript frontend** arayüzü tasarlayalım. Bu arayüz, Flask API’ye istek gönderecek ve gelen cevabı ekranda gösterecek. Her şeyi tek dosyada, kolay anlaşılır ve doğrudan kopyalanabilir şekilde yapacağım.
+
+---
+
+## 📄 `index.html` (frontend)
+
+```html
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickChat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .chat-container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .message {
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        .user {
+            background-color: #d1e7dd;
+            align-self: flex-end;
+        }
+        .bot {
+            background-color: #e2e3e5;
+            align-self: flex-start;
+        }
+        .input-container {
+            display: flex;
+            padding: 10px;
+            background: #fff;
+            border-top: 1px solid #ccc;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        button {
+            margin-left: 10px;
+            padding: 10px 16px;
+            font-size: 16px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container" id="chat"></div>
+
+    <div class="input-container">
+        <input type="text" id="messageInput" placeholder="Mesajınızı yazın..." />
+        <button onclick="sendMessage()">Gönder</button>
+    </div>
+
+    <script>
+        const chat = document.getElementById('chat');
+        const input = document.getElementById('messageInput');
+
+        function appendMessage(text, sender) {
+            const div = document.createElement('div');
+            div.className = `message ${sender}`;
+            div.textContent = text;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const message = input.value.trim();
+            if (!message) return;
+
+            appendMessage(message, 'user');
+            input.value = '';
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                if (data.reply) {
+                    appendMessage(data.reply, 'bot');
+                } else {
+                    appendMessage('Bir hata oluştu.', 'bot');
+                }
+            } catch (error) {
+                appendMessage('Sunucuya bağlanılamadı.', 'bot');
+            }
+        }
+
+        input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+
+</body>
+</html>
+```
+
+---
+
+## 🔧 Kullanım Talimatları:
+
+1. Flask backend’in çalışıyor olmalı (`python app.py` komutuyla).
+2. Bu `index.html` dosyasını bir tarayıcıda açman yeterli.
+3. Frontend, `http://127.0.0.1:5000/chat` adresine istek atar ve cevabı ekrana yazdırır.
+4. Eğer sunucuyu başka bir adrese deploy edersen, `fetch` içindeki URL’yi güncellemen yeterli.
+
+---
+
+İstersen bu frontend’i Flask projenin içine entegre edip `/` rotasından açılmasını da sağlayabiliriz.  
+Ayrıca projeyi **Railway**, **Render** ya da başka bir platforma deploy etmek istiyorsan hemen yardımcı olabilirim. Hangisini istersin?
